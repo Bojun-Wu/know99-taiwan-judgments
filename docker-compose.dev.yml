@@ -1,0 +1,45 @@
+services:
+  database:
+    image: postgres:16-alpine
+    ports:
+      - 5432:5432
+    volumes:
+      - database:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=${DB_DATABASE}
+      - POSTGRES_USER=${DB_USERNAME}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-U', '${DB_USERNAME}']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  typesense:
+    image: typesense/typesense:28.0
+    ports:
+      - '${TYPESENSE_PORT}:8108'
+    environment:
+      - TYPESENSE_API_KEY=${TYPESENSE_API_KEY}
+      - TYPESENSE_DATA_DIR=/typesense-data
+      - TYPESENSE_ENABLE_CORS=true
+    volumes:
+      - typesense:/typesense-data
+    depends_on:
+      database:
+        condition: service_healthy
+
+  redis:
+    image: redis:7.4.4-alpine
+    ports:
+      - '${REDIS_PORT}:6379'
+    volumes:
+      - redis:/data
+
+volumes:
+  database:
+    name: verdict-query-database
+  typesense:
+    name: verdict-query-typesense
+  redis:
+    name: verdict-query-redis

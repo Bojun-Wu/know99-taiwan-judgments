@@ -1,0 +1,37 @@
+# 忽略 Laravel 的常見目錄和檔案
+node_modules
+vendor
+.env
+.env.*
+*.log
+
+# 忽略版本控制相關文件
+.git
+.gitignore
+.gitattributes
+
+# 忽略 IDE/編輯器產生的文件
+*.idea
+*.vscode
+*.sublime*
+
+# 忽略操作系統特定文件
+.DS_Store
+Thumbs.db
+
+# 忽略其他臨時文件
+# storage
+storage/app
+storage/*.key
+storage/logs/*
+storage/framework/sessions/*
+storage/framework/views/*
+storage/framework/cache/*
+# public
+public/storage
+public/hot
+public/mix-manifest.json
+public/js/*
+public/css/*
+public/img/*
+public/fonts/*

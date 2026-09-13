@@ -1,0 +1,6 @@
+.content {
+    @mixin larger-than $mantine-breakpoint-xs {
+        border: 1px solid var(--mantine-color-default-border);
+        border-radius: var(--mantine-radius-md);
+    }
+}

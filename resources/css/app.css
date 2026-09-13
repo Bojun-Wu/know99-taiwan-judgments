@@ -1,0 +1,9 @@
+@import '@mantine/core/styles.css';
+@import '@mantine/dates/styles.css';
+@import '@mantine/notifications/styles.css';
+
+/* 使用 <Button component={Link}> 時 inertia 會將 data-loading 加入 element 上，導致 button style 錯誤 */
+a.mantine-Button-root[data-loading] .mantine-Button-inner {
+    opacity: 1;
+    transform: none;
+}

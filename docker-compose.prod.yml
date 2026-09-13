@@ -1,0 +1,74 @@
+services:
+  laravel:
+    image: bmctechh/verdict-query:latest
+    env_file:
+      # portainer 將手動設的環境變數，設定到 stack.env
+      - stack.env
+    expose:
+      - '80'
+    networks:
+      - laravel_network
+      - caddy_proxy
+    volumes:
+      - laravel_sitemap:/var/www/html/public/sitemaps
+    depends_on:
+      - redis
+
+  queue-worker:
+    image: bmctechh/verdict-query:latest
+    restart: unless-stopped
+    entrypoint: ["php", "artisan", "queue:work"]
+    env_file:
+      - stack.env
+    networks:
+      - laravel_network
+    depends_on:
+      - redis
+  
+  inertia-ssr:
+    image: bmctechh/verdict-query:latest
+    restart: unless-stopped
+    entrypoint: ["php", "artisan", "inertia:start-ssr"]
+    env_file:
+      - stack.env
+    expose:
+      - '13714'
+    networks:
+      - laravel_network
+
+  typesense:
+    image: typesense/typesense:28.0
+    expose:
+      - '${TYPESENSE_PORT}'
+    environment:
+      - TYPESENSE_API_KEY=${TYPESENSE_API_KEY}
+      - TYPESENSE_DATA_DIR=/typesense-data
+      - TYPESENSE_ENABLE_CORS=true
+    networks:
+      - laravel_network
+    volumes:
+      - typesense:/typesense-data
+
+  redis:
+    image: redis:7.4.4-alpine
+    restart: unless-stopped
+    volumes:
+      - redis:/data
+    expose:
+      - '${REDIS_PORT}'
+    networks:
+      - laravel_network
+
+volumes:
+  typesense:
+    name: typesense
+  redis:
+    name: redis
+  laravel_sitemap:
+    name: laravel_sitemap
+
+networks:
+  caddy_proxy:
+    external: true
+  laravel_network:
+    external: true
