@@ -9,7 +9,7 @@ This repository demonstrates a production-oriented full-stack architecture built
 ## Highlights
 
 - **Full-text judgment search** powered by Laravel Scout and Typesense, with exact-query matching and filters for court, case type, and year
-- **AI-assisted legal document analysis** using Gemini structured output to generate a plain-language summary, keywords, and named entities
+- **AI-assisted legal document analysis** using Groq structured output to generate a plain-language summary, keywords, and named entities
 - **Entity discovery** across people and organizations, ranked by search relevance and linked to related judgments
 - **Behavior-based discovery** with trending searches and judgments calculated from asynchronous, deduplicated activity logs
 - **Bilingual user experience** with Traditional Chinese as the default and English routes under `/en`
@@ -31,7 +31,7 @@ Browser
              ├── PostgreSQL ── judgments, entities, posts, users, analytics
              ├── Typesense ─── full-text search and relevance scoring
              ├── Redis ─────── cache, sessions, and queued jobs
-             ├── Gemini API ── on-demand structured judgment analysis
+             ├── Groq API ──── on-demand structured judgment analysis
              └── R2 / S3 ───── optional post image storage
 ```
 
@@ -44,7 +44,7 @@ Activity writes are dispatched to queues so page requests are not blocked by ana
 | Backend | PHP 8.2+, Laravel 12, Eloquent ORM, Laravel Scout |
 | Frontend | React 19, TypeScript, Inertia.js 2, Mantine 7 |
 | Data | PostgreSQL 16, Redis 7, Typesense 28 |
-| AI | Google Gemini API with JSON-schema-constrained output |
+| AI | Groq API with configurable model and JSON-schema-constrained output |
 | Rendering & localization | Inertia SSR, React i18next, Ziggy |
 | Tooling | Vite 6, ESLint 9, Prettier 3, Pest 3 |
 | Infrastructure | Docker, Nginx, PHP-FPM, Supervisor, S3-compatible storage |
@@ -95,7 +95,9 @@ TYPESENSE_API_KEY=choose-a-local-api-key
 
 The database name, username, password, Typesense port, API key, and Redis port are also consumed by `docker-compose.dev.yml`, so keep those values consistent.
 
-Gemini and cloud-storage credentials are optional. The core browsing and search experience can run without them; AI analysis requires `GEMINI_API_KEY` and `GEMINI_MODEL`, while post image uploads require the configured R2/S3 values.
+Groq and cloud-storage credentials are optional. The core browsing and search experience can run without them; AI analysis requires `GROQ_SECRET_KEY` and uses `GROQ_MODEL` (default: `qwen/qwen3.8-27b`), while post image uploads require the configured R2/S3 values.
+
+The analysis service uses Groq's OpenAI-compatible chat completions endpoint and strict JSON Schema output. To use another Groq-supported model, change `GROQ_MODEL`; if changing providers, update the request format and response extraction in `app/Services/VerdictSummaryService.php` because structured-output request formats differ between providers.
 
 ### 3. Start infrastructure
 

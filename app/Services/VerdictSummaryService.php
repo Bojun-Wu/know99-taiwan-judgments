@@ -6,10 +6,7 @@ use App\Models\Organization;
 use App\Models\Person;
 use App\Models\Verdict;
 use App\Models\VerdictSummary;
-use Generator;
-use GuzzleHttp\Client;
 use Illuminate\Support\Str;
-use GuzzleHttp\Exception\RequestException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -81,6 +78,7 @@ class VerdictSummaryService
             "title" => "判決書分析結果",
             "description" => "對判決書進行分析後提取的結構化資訊。",
             "type" => "object",
+            "additionalProperties" => false,
             "properties" => [
                 "人名" => [
                     "type" => "array",
@@ -114,25 +112,39 @@ class VerdictSummaryService
 
     public function getAIAnalysisVerdict(Verdict $verdict): void
     {
-        if (!env('GEMINI_API_KEY') || !env('GEMINI_MODEL')) {
-            throw new \Exception('GEMINI_API_KEY or GEMINI_MODEL is not set');
+        $apiKey = env('GROQ_SECRET_KEY');
+        $model = env('GROQ_MODEL', 'qwen/qwen3.8-27b');
+
+        if (!$apiKey) {
+            throw new \Exception('GROQ_SECRET_KEY is not set');
         }
 
-        $response = Http::withOptions([
-            'verify' => false,
-        ])->withUrlParameters([
-            'apiKey' => env('GEMINI_API_KEY'),
-            'model' => env('GEMINI_MODEL'),
-        ])->withHeaders([
-            'Content-Type' => 'application/json',
-        ])->post("https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={apiKey}", [
-            "system_instruction" => ["parts" => [["text" => $this->getSystemPrompt()]]],
-            "contents" => ["parts" => [["text" => $this->getUserPrompt($verdict->content)]]],
-            "generationConfig" => [
-                "responseMimeType" => "application/json",
-                "responseSchema" => $this->getResponseSchema(),
+        $response = Http::withToken($apiKey)
+            ->acceptJson()
+            ->timeout(120)
+            ->post('https://api.groq.com/openai/v1/chat/completions', [
+                'model' => $model,
+                'messages' => [
+                    [
+                        'role' => 'system',
+                        'content' => $this->getSystemPrompt(),
+                    ],
+                    [
+                        'role' => 'user',
+                        'content' => $this->getUserPrompt($verdict->content),
+                    ],
+                ],
+                'response_format' => [
+                    'type' => 'json_schema',
+                    'json_schema' => [
+                        'name' => 'verdict_analysis',
+                        'strict' => true,
+                        'schema' => $this->getResponseSchema(),
+                    ],
+                ],
+                'temperature' => 0,
             ],
-        ]);
+            );
         if ($response->failed()) {
             Log::error('Failed to generate summary', [
                 'verdict_id' => $verdict->id,
@@ -141,7 +153,10 @@ class VerdictSummaryService
             throw new \Exception('Failed to generate summary');
         }
 
-        $analysis = json_decode($response->json()['candidates'][0]['content']['parts'][0]['text'], true);
+        $analysisContent = $response->json('choices.0.message.content');
+        $analysis = is_string($analysisContent)
+            ? json_decode($analysisContent, true)
+            : null;
 
         // check if the analysis is valid
         if (!isset($analysis['人名']) || !isset($analysis['機構名']) || !isset($analysis['關鍵字']) || !isset($analysis['摘要'])) {
