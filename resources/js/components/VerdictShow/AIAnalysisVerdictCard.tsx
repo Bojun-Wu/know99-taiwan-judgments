@@ -1,6 +1,7 @@
 import { useLocalizedRoute } from '@/i18n/routes';
+import { SharedData } from '@/types';
 import { Verdict } from '@/types/verdict';
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { ActionIcon, Button, Card, Center, Grid, Group, Loader, Stack, Text, ThemeIcon, Title, Tooltip } from '@mantine/core';
 import { useLocalStorage } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
@@ -21,12 +22,13 @@ interface Props {
 
 export default function AIAnalysisVerdictCard({ verdict }: Props) {
     const { t } = useTranslation();
+    const { locale } = usePage<SharedData>().props;
     const localizedRoute = useLocalizedRoute();
     const [verdictData, setVerdictData] = useState<Verdict>(verdict);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string>('');
     const [lastVoted, setLastVoted] = useLocalStorage<Date | null>({
-        key: `summary-${verdictData.summary?.id}-voted`,
+        key: `summary-${locale}-${verdictData.summary?.id}-voted`,
         defaultValue: null,
     });
     const allowVoteClick = lastVoted ? dayjs(lastVoted).isBefore(dayjs().subtract(1, 'day')) : true;
@@ -36,7 +38,7 @@ export default function AIAnalysisVerdictCard({ verdict }: Props) {
         setError('');
         try {
             console.log('fetching AI analysis verdict');
-            const response = await axios.get(route('verdicts.ai-analysis', { verdict: verdict.verdictId }));
+            const response = await axios.get(route('verdicts.ai-analysis', { verdict: verdict.verdictId }), { params: { locale } });
 
             // Check if AI analysis was blocked
             if (response.data.ai_analysis_blocked) {
@@ -52,7 +54,7 @@ export default function AIAnalysisVerdictCard({ verdict }: Props) {
             console.log('fetching AI analysis verdict done');
             setIsLoading(false);
         }
-    }, [t, verdict.verdictId]);
+    }, [locale, t, verdict.verdictId]);
 
     useEffect(() => {
         if (!verdictData.summary) fetchAIAnalysisVerdict();
@@ -69,7 +71,7 @@ export default function AIAnalysisVerdictCard({ verdict }: Props) {
             if (verdictData.summary?.id && allowVoteClick) {
                 console.log('voting', verdictData.summary.id, type);
                 setLastVoted(dayjs().toDate());
-                await axios.post(route(`verdicts.ai-analysis.${type}`, { summary: verdictData.summary.id }));
+                await axios.post(route(`verdicts.ai-analysis.${type}`, { summary: verdictData.summary.id }), { locale });
             }
         } catch (error) {
             console.error(error);
@@ -116,7 +118,9 @@ export default function AIAnalysisVerdictCard({ verdict }: Props) {
                                 <Text size="sm" c="dimmed" fw={500}>
                                     {t('ai.summary')}
                                 </Text>
-                                <Text style={{ whiteSpace: 'pre-wrap' }}>{verdictData.summary?.summary}</Text>
+                                <Text style={{ whiteSpace: 'pre-wrap' }}>
+                                    {locale === 'en' ? verdictData.summary?.summaryEn : verdictData.summary?.summaryZh}
+                                </Text>
                             </Stack>
                         </Grid.Col>
 

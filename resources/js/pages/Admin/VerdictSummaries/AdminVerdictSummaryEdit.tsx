@@ -14,9 +14,12 @@ interface Props {
 export default function AdminVerdictSummaryEdit({ summary }: Props) {
     const form = useForm({
         initialValues: {
-            summary: summary.data.summary,
-            upvotes: summary.data.upvotes,
-            downvotes: summary.data.downvotes,
+            summary_zh: summary.data.summaryZh,
+            summary_en: summary.data.summaryEn,
+            upvotes_zh: summary.data.upvotesZh,
+            downvotes_zh: summary.data.downvotesZh,
+            upvotes_en: summary.data.upvotesEn,
+            downvotes_en: summary.data.downvotesEn,
             status: summary.data.status,
         },
     });
@@ -61,15 +64,25 @@ export default function AdminVerdictSummaryEdit({ summary }: Props) {
                                 </Grid.Col>
 
                                 <Grid.Col span={12}>
-                                    <Textarea label="Summary" {...form.getInputProps('summary')} minRows={4} maxRows={8} autosize required />
+                                    <Textarea label="Chinese Summary" {...form.getInputProps('summary_zh')} minRows={4} maxRows={8} autosize required />
+                                </Grid.Col>
+
+                                <Grid.Col span={12}>
+                                    <Textarea label="English Summary" {...form.getInputProps('summary_en')} minRows={4} maxRows={8} autosize required />
                                 </Grid.Col>
 
                                 <Grid.Col span={{ base: 12, md: 6 }}>
-                                    <TextInput label="Upvotes" type="number" {...form.getInputProps('upvotes')} min={0} required />
+                                    <TextInput label="Chinese Upvotes" type="number" {...form.getInputProps('upvotes_zh')} min={0} required />
                                 </Grid.Col>
 
                                 <Grid.Col span={{ base: 12, md: 6 }}>
-                                    <TextInput label="Downvotes" type="number" {...form.getInputProps('downvotes')} min={0} required />
+                                    <TextInput label="Chinese Downvotes" type="number" {...form.getInputProps('downvotes_zh')} min={0} required />
+                                </Grid.Col>
+                                <Grid.Col span={{ base: 12, md: 6 }}>
+                                    <TextInput label="English Upvotes" type="number" {...form.getInputProps('upvotes_en')} min={0} required />
+                                </Grid.Col>
+                                <Grid.Col span={{ base: 12, md: 6 }}>
+                                    <TextInput label="English Downvotes" type="number" {...form.getInputProps('downvotes_en')} min={0} required />
                                 </Grid.Col>
                                 <Grid.Col span={{ base: 12, md: 6 }}>
                                     <Select

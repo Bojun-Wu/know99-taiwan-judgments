@@ -15,7 +15,7 @@ class AdminVerdictSummaryController extends Controller
     public function index(Request $request)
     {
         $validated = $request->validate([
-            'sort_by' => 'nullable|string|in:id,verdict_id,upvotes,downvotes,status,created_at,updated_at',
+            'sort_by' => 'nullable|string|in:id,verdict_id,upvotes_zh,downvotes_zh,upvotes_en,downvotes_en,status,created_at,updated_at',
             'sort_order' => 'nullable|string|in:asc,desc',
         ]);
 
@@ -46,9 +46,12 @@ class AdminVerdictSummaryController extends Controller
     public function update(Request $request, VerdictSummary $summary)
     {
         $validated = $request->validate([
-            'summary' => 'required|string',
-            'upvotes' => 'required|integer|min:0',
-            'downvotes' => 'required|integer|min:0',
+            'summary_zh' => 'required|string',
+            'summary_en' => 'required|string',
+            'upvotes_zh' => 'required|integer|min:0',
+            'downvotes_zh' => 'required|integer|min:0',
+            'upvotes_en' => 'required|integer|min:0',
+            'downvotes_en' => 'required|integer|min:0',
             'status' => 'required|string|in:active,deprecated',
         ]);
 

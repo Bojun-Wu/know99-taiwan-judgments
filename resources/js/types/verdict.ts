@@ -54,9 +54,12 @@ export interface Organization {
 export interface VerdictSummary {
     id: number;
     verdictId: string;
-    summary: string;
-    upvotes: number;
-    downvotes: number;
+    summaryZh: string;
+    summaryEn: string;
+    upvotesZh: number;
+    downvotesZh: number;
+    upvotesEn: number;
+    downvotesEn: number;
     status: 'active' | 'deprecated';
     createdAt: string;
     updatedAt: string;

@@ -58,12 +58,19 @@ export default function AdminVerdictSummaryIndex({ summaries, sortBy, sortOrder 
                                         <SortableHeader column="verdict_id">Verdict ID</SortableHeader>
                                     </Table.Th>
                                     <Table.Th>Verdict Slug</Table.Th>
-                                    <Table.Th w={300}>Summary</Table.Th>
+                                    <Table.Th>Chinese Summary</Table.Th>
                                     <Table.Th>
-                                        <SortableHeader column="upvotes">Upvotes</SortableHeader>
+                                        <SortableHeader column="upvotes_zh">Chinese Upvotes</SortableHeader>
                                     </Table.Th>
                                     <Table.Th>
-                                        <SortableHeader column="downvotes">Downvotes</SortableHeader>
+                                        <SortableHeader column="downvotes_zh">Chinese Downvotes</SortableHeader>
+                                    </Table.Th>
+                                    <Table.Th>English Summary</Table.Th>
+                                    <Table.Th>
+                                        <SortableHeader column="upvotes_zh">English Upvotes</SortableHeader>
+                                    </Table.Th>
+                                    <Table.Th>
+                                        <SortableHeader column="downvotes_zh">English Downvotes</SortableHeader>
                                     </Table.Th>
                                     <Table.Th>
                                         <SortableHeader column="status">Status</SortableHeader>
@@ -114,16 +121,30 @@ export default function AdminVerdictSummaryIndex({ summaries, sortBy, sortOrder 
                                             <HoverCard width={300} position="left">
                                                 <HoverCard.Target>
                                                     <Text size="sm" lineClamp={2}>
-                                                        {summary.summary}
+                                                        {summary.summaryZh}
                                                     </Text>
                                                 </HoverCard.Target>
                                                 <HoverCard.Dropdown>
-                                                    <Text size="sm">{summary.summary}</Text>
+                                                    <Text size="sm">{summary.summaryZh}</Text>
                                                 </HoverCard.Dropdown>
                                             </HoverCard>
                                         </Table.Td>
-                                        <Table.Td>{summary.upvotes}</Table.Td>
-                                        <Table.Td>{summary.downvotes}</Table.Td>
+                                        <Table.Td>{summary.upvotesZh}</Table.Td>
+                                        <Table.Td>{summary.downvotesZh}</Table.Td>
+                                        <Table.Td>
+                                            <HoverCard width={300} position="left">
+                                                <HoverCard.Target>
+                                                    <Text size="sm" lineClamp={2}>
+                                                        {summary.summaryEn}
+                                                    </Text>
+                                                </HoverCard.Target>
+                                                <HoverCard.Dropdown>
+                                                    <Text size="sm">{summary.summaryEn}</Text>
+                                                </HoverCard.Dropdown>
+                                            </HoverCard>
+                                        </Table.Td>
+                                        <Table.Td>{summary.upvotesEn}</Table.Td>
+                                        <Table.Td>{summary.downvotesEn}</Table.Td>
                                         <Table.Td>
                                             <Badge color={summary.status === 'active' ? 'green' : 'red'} size="sm">
                                                 {summary.status === 'active' ? 'Active' : 'Deprecated'}

@@ -6,8 +6,9 @@ import { useTranslation } from 'react-i18next';
 import classes from './VerdictCard.module.css';
 
 export default function TrendingVerdictCard({ verdict }: { verdict: Verdict }) {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const localizedRoute = useLocalizedRoute();
+    const summary = verdict.summary;
     return (
         <Card
             shadow="sm"
@@ -23,7 +24,7 @@ export default function TrendingVerdictCard({ verdict }: { verdict: Verdict }) {
                         {verdict.title}
                     </Title>
                     <Text size="sm" c="dimmed" lineClamp={3}>
-                        {verdict.summary ? `${verdict.summary.summary} ${t('verdicts.fullText')}${verdict.content}` : verdict.content}
+                        {summary ? `${i18n.language === 'en' ? summary.summaryEn : summary.summaryZh} ${t('verdicts.fullText')}${verdict.content}` : verdict.content}
                     </Text>
                     <Group mt="xs" gap={3}>
                         {verdict.keywords?.map((kw) => (

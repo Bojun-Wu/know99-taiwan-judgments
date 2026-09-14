@@ -42,17 +42,17 @@ class VerdictAIAnalysisController extends Controller
         ]);
     }
 
-    public function upvoteVerdictSummary(VerdictSummary $summary)
+    public function upvoteVerdictSummary(VerdictSummary $summary, Request $request)
     {
         abort_if(!$summary, 404, 'Verdict summary not found');
-        $summary->increment('upvotes');
+        $summary->increment($request->input('locale') === 'en' ? 'upvotes_en' : 'upvotes_zh');
         return response()->json(['message' => 'Upvoted successfully']);
     }
 
-    public function downvoteVerdictSummary(VerdictSummary $summary)
+    public function downvoteVerdictSummary(VerdictSummary $summary, Request $request)
     {
         abort_if(!$summary, 404, 'Verdict summary not found');
-        $summary->increment('downvotes');
+        $summary->increment($request->input('locale') === 'en' ? 'downvotes_en' : 'downvotes_zh');
         return response()->json(['message' => 'Downvoted successfully']);
     }
 }

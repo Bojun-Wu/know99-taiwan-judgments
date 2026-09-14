@@ -32,7 +32,8 @@ export default function VerdictShow({ verdict }: Props) {
     // 110 年度消債更字第 139 號
     const formalVerdictId = `${verdict.data.year} 年度${verdict.data.category}字第 ${verdict.data.number} 號`;
     const summary = verdict.data.summary;
-    const excerpt = summary ? t('verdicts.aiExcerpt', { summary: summary.summary }) : t('verdicts.excerpt', { content: shortVerdictContent });
+    const summaryText = locale === 'en' ? summary?.summaryEn : summary?.summaryZh;
+    const excerpt = summaryText ? t('verdicts.aiExcerpt', { summary: summaryText }) : t('verdicts.excerpt', { content: shortVerdictContent });
     const pageUrl = localizedRoute('verdicts.show', verdict.data.verdictId);
 
     return (

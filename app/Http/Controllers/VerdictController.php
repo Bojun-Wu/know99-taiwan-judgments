@@ -67,8 +67,11 @@ class VerdictController extends Controller
 
         // determine if summary need to be regenerated
         if ($summary) {
-            $summaryTotalVotes = $summary->upvotes + $summary->downvotes;
-            if ($summaryTotalVotes >= 3 && $summary->downvotes > $summary->upvotes) {
+            $isEnglish = app()->getLocale() === 'en';
+            $upvotes = $isEnglish ? $summary->upvotes_en : $summary->upvotes_zh;
+            $downvotes = $isEnglish ? $summary->downvotes_en : $summary->downvotes_zh;
+            $summaryTotalVotes = $upvotes + $downvotes;
+            if ($summaryTotalVotes >= 3 && $downvotes > $upvotes) {
                 $summary->update([
                     'status' => 'deprecated',
                 ]);

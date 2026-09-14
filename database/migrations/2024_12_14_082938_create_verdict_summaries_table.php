@@ -15,9 +15,12 @@ return new class extends Migration
         Schema::create('verdict_summaries', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(Verdict::class)->constrained()->cascadeOnDelete();
-            $table->text('summary');
-            $table->integer('upvotes')->default(0);
-            $table->integer('downvotes')->default(0);
+            $table->text('summary_zh');
+            $table->text('summary_en');
+            $table->integer('upvotes_zh')->default(0);
+            $table->integer('downvotes_zh')->default(0);
+            $table->integer('upvotes_en')->default(0);
+            $table->integer('downvotes_en')->default(0);
             $table->enum('status', ['active', 'deprecated'])->default('active');
             $table->timestamps();
         });

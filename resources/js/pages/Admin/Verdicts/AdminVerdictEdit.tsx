@@ -232,21 +232,21 @@ export default function AdminVerdictEdit({ verdict, courts, people, organization
                                                     <HoverCard width={400} position="left">
                                                         <HoverCard.Target>
                                                             <Text size="sm" lineClamp={2}>
-                                                                {summary.summary}
+                                                                {summary.summaryZh}
                                                             </Text>
                                                         </HoverCard.Target>
                                                         <HoverCard.Dropdown>
-                                                            <Text size="sm">{summary.summary}</Text>
+                                                            <Text size="sm">{summary.summaryZh}</Text>
                                                         </HoverCard.Dropdown>
                                                     </HoverCard>
                                                 </Table.Td>
                                                 <Table.Td>
                                                     <Group gap="xs">
                                                         <Badge color="green" size="md">
-                                                            👍 {summary.upvotes}
+                                                            👍 {summary.upvotesZh}
                                                         </Badge>
                                                         <Badge color="red" size="md">
-                                                            👎 {summary.downvotes}
+                                                            👎 {summary.downvotesZh}
                                                         </Badge>
                                                     </Group>
                                                 </Table.Td>
