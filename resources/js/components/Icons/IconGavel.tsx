@@ -1,12 +1,4 @@
-export default function IconGavel({
-    size = 24,
-    strokeWidth = 2,
-    style,
-}: {
-    size?: number;
-    strokeWidth?: number;
-    style?: React.CSSProperties;
-}) {
+export default function IconGavel({ size = 24, strokeWidth = 2, style }: { size?: number; strokeWidth?: number; style?: React.CSSProperties }) {
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"
