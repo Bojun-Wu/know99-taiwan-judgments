@@ -43,6 +43,8 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'name' => config('app.name'),
+            'locale' => app()->getLocale() === 'en' ? 'en' : 'zh-TW',
+            'supportedLocales' => ['zh-TW', 'en'],
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => [
                 'user' => $request->user() ? UserResource::make($request->user()) : null,
@@ -52,7 +54,7 @@ class HandleInertiaRequests extends Middleware
                 'location' => $request->url(),
             ],
             'flash' => [
-                'message' => fn () => $request->session()->get('message'),
+                'message' => fn() => $request->session()->get('message'),
             ],
         ];
     }

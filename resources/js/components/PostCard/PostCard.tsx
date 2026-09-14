@@ -1,3 +1,4 @@
+import { useLocalizedRoute } from '@/i18n/routes';
 import { Post } from '@/types/post';
 import { Link } from '@inertiajs/react';
 import { Avatar, Card, Group, Image, Stack, Text, Title } from '@mantine/core';
@@ -9,8 +10,16 @@ import classes from './PostCard.module.css';
 const colors = ['blue', 'green', 'red', 'yellow', 'purple', 'orange', 'pink', 'brown'];
 
 export default function PostCard({ post }: { post: Post }) {
+    const localizedRoute = useLocalizedRoute();
     return (
-        <Card withBorder radius="md" shadow="sm" component={Link} href={route('posts.show', { post: post.slug })} classNames={{ root: classes.card }}>
+        <Card
+            withBorder
+            radius="md"
+            shadow="sm"
+            component={Link}
+            href={localizedRoute('posts.show', { post: post.slug })}
+            classNames={{ root: classes.card }}
+        >
             <Stack h="100%" justify="space-between">
                 <Group align="flex-start" justify="space-between" wrap="nowrap">
                     <Stack gap="xs">

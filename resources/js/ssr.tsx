@@ -6,18 +6,21 @@ import { MantineProvider } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import ReactDOMServer from 'react-dom/server';
+import { I18nextProvider } from 'react-i18next';
 import { type RouteName, route } from 'ziggy-js';
+import { createI18n } from './i18n';
+import type { Locale } from './i18n/locales';
 import { theme } from './theme';
-
-const appName = import.meta.env.VITE_APP_NAME || 'Know99判決書';
 
 createServer((page) =>
     createInertiaApp({
         page,
         render: ReactDOMServer.renderToString,
-        title: (title) => `${title} | ${appName}`,
+        title: (title) => `${title} | Know99`,
         resolve: (name) => resolvePageComponent(`./pages/${name}.tsx`, import.meta.glob('./pages/**/*.tsx')),
         setup: ({ App, props }) => {
+            const locale = (page.props.locale || 'zh-TW') as Locale;
+            const i18n = createI18n(locale);
             /* eslint-disable */
             // @ts-expect-error
             global.route<RouteName> = (name, params, absolute) =>
@@ -30,10 +33,12 @@ createServer((page) =>
             /* eslint-enable */
 
             return (
-                <MantineProvider theme={theme} defaultColorScheme="auto">
-                    <Notifications />
-                    <App {...props} />
-                </MantineProvider>
+                <I18nextProvider i18n={i18n}>
+                    <MantineProvider theme={theme} defaultColorScheme="auto">
+                        <Notifications />
+                        <App {...props} />
+                    </MantineProvider>
+                </I18nextProvider>
             );
         },
     }),

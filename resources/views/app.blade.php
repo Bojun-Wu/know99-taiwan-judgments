@@ -58,8 +58,6 @@
         <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5384070877829940"
         crossorigin="anonymous"></script>
 
-        <title inertia>{{ config('app.name', 'Laravel') }}</title>
-
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link rel="preload" href="https://fonts.bunny.net/css?family=noto-sans-tc:400,500,600,700" as="style" onload="this.onload=null;this.rel='stylesheet'">

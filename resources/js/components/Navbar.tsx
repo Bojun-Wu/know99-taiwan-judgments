@@ -1,5 +1,7 @@
+import { useLocalizedRoute } from '@/i18n/routes';
 import { Link } from '@inertiajs/react';
 import { NavLink, Stack } from '@mantine/core';
+import { useTranslation } from 'react-i18next';
 import { IconBooks } from './Icons/IconBooks';
 import { IconFileText } from './Icons/IconFileText';
 import { IconHome } from './Icons/IconHome';
@@ -8,13 +10,15 @@ import { IconLabel } from './Icons/IconLabel';
 import { IconTrendingUp } from './Icons/IconTrendingUp';
 
 export default function Navbar() {
+    const { t } = useTranslation();
+    const localizedRoute = useLocalizedRoute();
     const navItems = [
-        { label: '首頁', href: route('home'), icon: IconHome },
-        { label: '熱門判決書', href: route('verdicts.trending'), icon: IconTrendingUp },
-        { label: '所有判決書', href: route('verdicts.index'), icon: IconBooks },
-        { label: '人名與組織資料庫', href: route('entities.index'), icon: IconLabel },
-        { label: '專欄文章', href: route('posts.index'), icon: IconFileText },
-        { label: '關於 Know99', href: route('about'), icon: IconInfoCircle },
+        { label: t('nav.home'), href: localizedRoute('home'), icon: IconHome },
+        { label: t('nav.trending'), href: localizedRoute('verdicts.trending'), icon: IconTrendingUp },
+        { label: t('nav.verdicts'), href: localizedRoute('verdicts.index'), icon: IconBooks },
+        { label: t('nav.entities'), href: localizedRoute('entities.index'), icon: IconLabel },
+        { label: t('nav.posts'), href: localizedRoute('posts.index'), icon: IconFileText },
+        { label: t('nav.about'), href: localizedRoute('about'), icon: IconInfoCircle },
     ];
 
     return (

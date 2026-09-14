@@ -1,14 +1,15 @@
+import { useLocalizedRoute } from '@/i18n/routes';
 import { Organization, Person } from '@/types/verdict';
 import { Link } from '@inertiajs/react';
 import { Button, Text } from '@mantine/core';
 import { useMemo } from 'react';
 import { IconSearch } from '../Icons/IconSearch';
 
-function keywordSpan(keyword: string, index: number) {
+function keywordSpan(keyword: string, index: number, href: string) {
     return (
         <Button
             component={Link}
-            href={`/search?query=${keyword}`}
+            href={href}
             key={`${keyword}-${index}`}
             variant="light"
             radius="xl"
@@ -28,6 +29,7 @@ interface Props {
 }
 
 export default function TaggedContent({ content, people, organizations }: Props) {
+    const localizedRoute = useLocalizedRoute();
     const taggedContent = useMemo(() => {
         // Create a map to store keywords and their corresponding type
         const keywordPatterns = new Map<string, RegExp>();
@@ -77,7 +79,7 @@ export default function TaggedContent({ content, people, organizations }: Props)
                     if (index === 0) return [part];
                     const count = keywordCounter.get(keyword)!;
                     keywordCounter.set(keyword, count + 1);
-                    return [...acc, keywordSpan(keyword, count), part];
+                    return [...acc, keywordSpan(keyword, count, localizedRoute('verdicts.search', { query: keyword })), part];
                 }, []);
 
                 newSegments.push(...result);
@@ -87,7 +89,7 @@ export default function TaggedContent({ content, people, organizations }: Props)
         });
 
         return segments;
-    }, [content, people, organizations]);
+    }, [content, people, organizations, localizedRoute]);
 
     return (
         <Text style={{ whiteSpace: 'pre-wrap' }} lh={1.7}>

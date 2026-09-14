@@ -1,3 +1,4 @@
+import { useLocalizedRoute } from '@/i18n/routes';
 import { Verdict } from '@/types/verdict';
 import { Link } from '@inertiajs/react';
 import { Anchor, Badge, Card, Flex, Group, Stack, Text, Title } from '@mantine/core';
@@ -6,8 +7,9 @@ import IconFileDescription from '../Icons/IconFileDescription';
 import classes from './VerdictCard.module.css';
 
 export default function VerdictCard({ verdict }: { verdict: Verdict }) {
+    const localizedRoute = useLocalizedRoute();
     return (
-        <Anchor component={Link} href={`/verdicts/${verdict.verdictId}`}>
+        <Anchor component={Link} href={localizedRoute('verdicts.show', { verdict: verdict.verdictId })}>
             <Card withBorder shadow="sm" radius="md" p="md" mb="sm" classNames={{ root: classes.card }}>
                 <Stack gap="xs">
                     <Group gap="xs">

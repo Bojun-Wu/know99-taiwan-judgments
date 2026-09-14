@@ -1,50 +1,53 @@
 import { IconTrendingUp } from '@/components/Icons/IconTrendingUp';
 import TrendingVerdictCard from '@/components/VerdictCard/TrendingVerdictCard';
+import { localeRoute, useLocalizedRoute } from '@/i18n/routes';
 import Layout from '@/layouts/Layout';
 import { ResourceResponse } from '@/types';
 import { Verdict } from '@/types/verdict';
 import { Head } from '@inertiajs/react';
 import { Container, Group, SimpleGrid, Stack, ThemeIcon, Title } from '@mantine/core';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
     verdicts: ResourceResponse<Verdict[]>;
 }
 
 export default function VerdictTrending({ verdicts }: Props) {
+    const { t, i18n } = useTranslation();
+    const localizedRoute = useLocalizedRoute();
+    const locale = i18n.language === 'en' ? 'en' : 'zh-TW';
     return (
         <Layout>
             <Head>
                 {/* 基本 SEO 標籤 */}
-                <title>熱門判決書 - 最新司法焦點與指標性案例</title>
-                <meta
-                    name="description"
-                    content="探索 Know99判決書 精選的熱門判決書，涵蓋最新司法焦點、重要判例及指標性案件分析。即時了解大眾關心的法律議題。"
-                />
+                <title>{t('verdicts.trendingTitle')}</title>
+                <meta name="description" content={t('verdicts.trendingDescription')} />
 
                 {/* Open Graph (OG) 標籤 - 用於社群媒體分享 */}
-                <meta property="og:title" content="熱門判決書 - 最新司法焦點與指標性案例 | Know99判決書" />
-                <meta property="og:description" content="探索精選的熱門判決書，了解當前社會關注的法律議題和重要判例。" />
+                <meta property="og:title" content={`${t('verdicts.trendingTitle')} | ${t('siteName')}`} />
+                <meta property="og:description" content={t('verdicts.trendingOgDescription')} />
                 <meta property="og:type" content="website" />
-                <meta property="og:url" content={route('verdicts.trending')} />
-                <meta property="og:site_name" content="Know99判決書" />
-                <meta property="og:locale" content="zh_TW" />
+                <meta property="og:url" content={localizedRoute('verdicts.trending')} />
+                <meta property="og:site_name" content={t('siteName')} />
+                <meta property="og:locale" content={locale === 'en' ? 'en_US' : 'zh_TW'} />
 
                 {/* 語言聲明 */}
-                <meta http-equiv="Content-Language" content="zh-TW" />
-                <link rel="alternate" hrefLang="zh-TW" href={route('verdicts.trending')} />
+                <meta http-equiv="Content-Language" content={locale} />
+                <link rel="alternate" hrefLang="zh-TW" href={localeRoute('verdicts.trending', {}, 'zh-TW')} />
+                <link rel="alternate" hrefLang="en" href={localeRoute('verdicts.trending', {}, 'en')} />
 
                 {/* 結構化數據 (JSON-LD) */}
                 <script type="application/ld+json">
                     {JSON.stringify({
                         '@context': 'https://schema.org',
                         '@type': 'CollectionPage',
-                        name: '熱門判決書 - 最新司法焦點與指標性案例',
-                        url: route('verdicts.trending'),
-                        description: 'Know99判決書精選的當前最受關注的公開判決書列表，涵蓋多種類型案件。',
+                        name: t('verdicts.trendingTitle'),
+                        url: localizedRoute('verdicts.trending'),
+                        description: t('verdicts.trendingDescription'),
                         mainEntity: {
                             '@type': 'ItemList',
-                            name: '熱門判決書列表',
-                            description: '一系列當前受到高度關注的法院判決書。',
+                            name: t('verdicts.trendingList'),
+                            description: t('verdicts.trendingListDescription'),
                             itemListElement: verdicts.data.map((verdict, index) => {
                                 const formalVerdictId = `${verdict.year} 年度${verdict.category}字第 ${verdict.number} 號`;
                                 return {
@@ -53,7 +56,7 @@ export default function VerdictTrending({ verdicts }: Props) {
                                     item: {
                                         '@type': 'LegalCase',
                                         name: `${verdict.court?.name} ${formalVerdictId} ${verdict.title}`,
-                                        url: route('verdicts.show', verdict.verdictId),
+                                        url: localizedRoute('verdicts.show', verdict.verdictId),
                                         description: verdict.content.replace(/\s/g, '').slice(0, 30) + '...',
                                     },
                                 };
@@ -61,7 +64,7 @@ export default function VerdictTrending({ verdicts }: Props) {
                         },
                         publisher: {
                             '@type': 'Organization',
-                            name: 'Know99判決書',
+                            name: t('siteName'),
                             logo: {
                                 '@type': 'ImageObject',
                                 url: 'https://know99.com/favicon.ico',
@@ -79,7 +82,7 @@ export default function VerdictTrending({ verdicts }: Props) {
                         <ThemeIcon variant="light" size="lg" radius="md">
                             <IconTrendingUp />
                         </ThemeIcon>
-                        <Title order={2}>熱門判決書</Title>
+                        <Title order={2}>{t('nav.trending')}</Title>
                     </Group>
 
                     <SimpleGrid cols={{ base: 1, sm: 2 }}>

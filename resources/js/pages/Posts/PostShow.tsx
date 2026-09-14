@@ -3,6 +3,7 @@ import { IconCalendar } from '@/components/Icons/IconCalendar';
 import { IconCheck } from '@/components/Icons/IconCheck';
 import { IconCopy } from '@/components/Icons/IconCopy';
 import { IconLine } from '@/components/Icons/IconLine';
+import { localeRoute, useLocalizedRoute } from '@/i18n/routes';
 import Layout from '@/layouts/Layout';
 import { ResourceResponse } from '@/types';
 import { Post } from '@/types/post';
@@ -25,6 +26,7 @@ import {
     TypographyStylesProvider,
 } from '@mantine/core';
 import dayjs from 'dayjs';
+import { useTranslation } from 'react-i18next';
 import classes from './PostShow.module.css';
 
 const colors = ['blue', 'green', 'red', 'yellow', 'purple', 'orange', 'pink', 'brown'];
@@ -34,6 +36,10 @@ interface Props {
 }
 
 export default function PostShow({ post }: Props) {
+    const { t, i18n } = useTranslation();
+    const localizedRoute = useLocalizedRoute();
+    const locale = i18n.language === 'en' ? 'en' : 'zh-TW';
+    const pageUrl = localizedRoute('posts.show', { post: post.data.slug });
     return (
         <Layout>
             <Head>
@@ -42,19 +48,21 @@ export default function PostShow({ post }: Props) {
                 <meta name="description" content={post.data.metaDescription} />
 
                 {/* Open Graph (OG) 標籤 - 用於社群媒體分享 */}
-                <meta property="og:title" content={`${post.data.title} | Know99判決書`} />
+                <meta property="og:title" content={`${post.data.title} | ${t('siteName')}`} />
                 <meta property="og:description" content={post.data.metaDescription} />
                 <meta property="og:type" content="article" />
                 <meta property="article:published_time" content={`${dayjs(post.data.updatedAt).format('YYYY-MM-DDTHH:mm:ssZ')}`} />
                 <meta property="article:author" content={post.data.author} />
-                <meta property="og:url" content={route('posts.show', { post: post.data.slug })} />
-                <meta property="og:site_name" content="Know99判決書" />
+                <meta property="og:url" content={pageUrl} />
+                <meta property="og:site_name" content={t('siteName')} />
                 <meta property="og:image" content={post.data.coverImageUrl} />
-                <meta property="og:locale" content="zh_TW" />
+                <meta property="og:locale" content={locale === 'en' ? 'en_US' : 'zh_TW'} />
 
                 {/* 語言聲明 */}
-                <meta http-equiv="Content-Language" content="zh-TW" />
-                <link rel="alternate" hrefLang="zh-TW" href={route('posts.show', { post: post.data.slug })} />
+                <meta http-equiv="Content-Language" content={locale} />
+                <link rel="canonical" href={pageUrl} />
+                <link rel="alternate" hrefLang="zh-TW" href={localeRoute('posts.show', post.data.slug, 'zh-TW')} />
+                <link rel="alternate" hrefLang="en" href={localeRoute('posts.show', post.data.slug, 'en')} />
 
                 {/* 結構化數據 (JSON-LD) */}
                 <script type="application/ld+json">
@@ -63,7 +71,7 @@ export default function PostShow({ post }: Props) {
                         '@type': 'Article',
                         mainEntityOfPage: {
                             '@type': 'WebPage',
-                            '@id': route('posts.show', { post: post.data.slug }),
+                            '@id': pageUrl,
                         },
                         headline: post.data.title,
                         image: [post.data.coverImageUrl, post.data.thumbnailUrl],
@@ -74,7 +82,7 @@ export default function PostShow({ post }: Props) {
                         },
                         publisher: {
                             '@type': 'Organization',
-                            name: 'Know99判決書',
+                            name: t('siteName'),
                             logo: {
                                 '@type': 'ImageObject',
                                 url: 'https://know99.com/favicon.ico',
@@ -83,7 +91,7 @@ export default function PostShow({ post }: Props) {
                             },
                         },
                         description: post.data.metaDescription,
-                        url: route('posts.show', { post: post.data.slug }),
+                        url: pageUrl,
                     })}
                 </script>
             </Head>
@@ -91,19 +99,19 @@ export default function PostShow({ post }: Props) {
                 <Stack gap="lg">
                     <Group justify="space-between">
                         <Button variant="subtle" leftSection={<IconArrowNarrowLeft size={16} />} onClick={() => history.back()}>
-                            上一頁
+                            {t('common.previousPage')}
                         </Button>
                         <Group>
-                            <Tooltip label="分享到 Line">
-                                <Anchor href={`https://social-plugins.line.me/lineit/share?url=${route('posts.show', { post: post.data.slug })}`}>
+                            <Tooltip label={t('common.shareLine')}>
+                                <Anchor href={`https://social-plugins.line.me/lineit/share?url=${pageUrl}`}>
                                     <ActionIcon variant="outline" size="lg">
                                         <IconLine />
                                     </ActionIcon>
                                 </Anchor>
                             </Tooltip>
-                            <CopyButton value={route('posts.show', { post: post.data.slug })}>
+                            <CopyButton value={pageUrl}>
                                 {({ copied, copy }) => (
-                                    <Tooltip label={copied ? '連結已複製!' : '複製本頁連結'}>
+                                    <Tooltip label={copied ? t('common.linkCopied') : t('common.copyLink')}>
                                         <ActionIcon variant="outline" size="lg" color={copied ? 'teal' : 'deepBlue'} onClick={copy}>
                                             {copied ? <IconCheck /> : <IconCopy />}
                                         </ActionIcon>
@@ -123,7 +131,7 @@ export default function PostShow({ post }: Props) {
                                 </Title>
                                 {post.data.status !== 'published' && (
                                     <Badge color="gray" size="lg">
-                                        尚未發布 - 僅管理員可見
+                                        {t('posts.unpublished')}
                                     </Badge>
                                 )}
                             </Group>

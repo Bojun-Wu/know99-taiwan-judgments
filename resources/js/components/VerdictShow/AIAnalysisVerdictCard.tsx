@@ -1,3 +1,4 @@
+import { useLocalizedRoute } from '@/i18n/routes';
 import { Verdict } from '@/types/verdict';
 import { Link } from '@inertiajs/react';
 import { ActionIcon, Button, Card, Center, Grid, Group, Loader, Stack, Text, ThemeIcon, Title, Tooltip } from '@mantine/core';
@@ -6,6 +7,7 @@ import { notifications } from '@mantine/notifications';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { IconAlertCircle } from '../Icons/IconAlertCircle';
 import IconRobot from '../Icons/IconRobot';
 import { IconSearch } from '../Icons/IconSearch';
@@ -18,6 +20,8 @@ interface Props {
 }
 
 export default function AIAnalysisVerdictCard({ verdict }: Props) {
+    const { t } = useTranslation();
+    const localizedRoute = useLocalizedRoute();
     const [verdictData, setVerdictData] = useState<Verdict>(verdict);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string>('');
@@ -25,7 +29,7 @@ export default function AIAnalysisVerdictCard({ verdict }: Props) {
         key: `summary-${verdictData.summary?.id}-voted`,
         defaultValue: null,
     });
-    const allowVoteClick = !!lastVoted ? dayjs(lastVoted).isBefore(dayjs().subtract(1, 'day')) : true;
+    const allowVoteClick = lastVoted ? dayjs(lastVoted).isBefore(dayjs().subtract(1, 'day')) : true;
 
     const fetchAIAnalysisVerdict = useCallback(async () => {
         setIsLoading(true);
@@ -33,31 +37,31 @@ export default function AIAnalysisVerdictCard({ verdict }: Props) {
         try {
             console.log('fetching AI analysis verdict');
             const response = await axios.get(route('verdicts.ai-analysis', { verdict: verdict.verdictId }));
-            
+
             // Check if AI analysis was blocked
             if (response.data.ai_analysis_blocked) {
-                setError('AI 分析暫時無法使用，請稍後再試');
+                setError(t('ai.unavailable'));
                 return;
             }
-            
+
             setVerdictData(response.data.verdict);
         } catch (error) {
             console.error(error);
-            setError('AI 摘要生成失敗，請稍後再試');
+            setError(t('ai.failed'));
         } finally {
             console.log('fetching AI analysis verdict done');
             setIsLoading(false);
         }
-    }, [verdict.verdictId]);
+    }, [t, verdict.verdictId]);
 
     useEffect(() => {
         if (!verdictData.summary) fetchAIAnalysisVerdict();
-    }, []);
+    }, [fetchAIAnalysisVerdict, verdictData.summary]);
 
     const handleVote = async (type: 'upvote' | 'downvote') => {
         notifications.show({
-            title: '感謝您的建議',
-            message: type === 'upvote' ? 'AI 摘要系統將會更準確' : 'AI 摘要系統將持續優化',
+            title: t('ai.thanks'),
+            message: t(type === 'upvote' ? 'ai.upvoteThanks' : 'ai.downvoteThanks'),
             color: 'green',
             position: 'top-right',
         });
@@ -83,13 +87,13 @@ export default function AIAnalysisVerdictCard({ verdict }: Props) {
                             <IconSparkles size={20} />
                         </ThemeIcon>
                         <Title order={5} fw={500}>
-                            AI 智能分析
+                            {t('ai.title')}
                         </Title>
                     </Group>
                     <Group>
                         {!isLoading && error && (
                             <Button variant="light" size="sm" onClick={fetchAIAnalysisVerdict} leftSection={<IconRobot size={16} />}>
-                                重新生成
+                                {t('ai.regenerate')}
                             </Button>
                         )}
                     </Group>
@@ -110,7 +114,7 @@ export default function AIAnalysisVerdictCard({ verdict }: Props) {
                         <Grid.Col span={{ base: 12, sm: hasEntities ? 6 : 12 }}>
                             <Stack gap="xs">
                                 <Text size="sm" c="dimmed" fw={500}>
-                                    摘要
+                                    {t('ai.summary')}
                                 </Text>
                                 <Text style={{ whiteSpace: 'pre-wrap' }}>{verdictData.summary?.summary}</Text>
                             </Stack>
@@ -122,14 +126,14 @@ export default function AIAnalysisVerdictCard({ verdict }: Props) {
                                     {verdictData.people && verdictData.people.length > 0 && (
                                         <>
                                             <Text size="sm" c="dimmed" fw={500}>
-                                                提及人名
+                                                {t('ai.people')}
                                             </Text>
                                             <Group gap="xs" wrap="wrap">
                                                 {verdictData.people.map((person) => (
                                                     <Button
                                                         key={person.id}
                                                         component={Link}
-                                                        href={`/search?query=${person.name}`}
+                                                        href={localizedRoute('verdicts.search', { query: person.name })}
                                                         variant="light"
                                                         radius="xl"
                                                         size="xs"
@@ -145,14 +149,14 @@ export default function AIAnalysisVerdictCard({ verdict }: Props) {
                                     {verdictData.organizations && verdictData.organizations.length > 0 && (
                                         <>
                                             <Text size="sm" c="dimmed" fw={500}>
-                                                相關組織
+                                                {t('ai.organizations')}
                                             </Text>
                                             <Group gap="xs" wrap="wrap">
                                                 {verdictData.organizations.map((org) => (
                                                     <Button
                                                         key={org.id}
                                                         component={Link}
-                                                        href={`/search?query=${org.name}`}
+                                                        href={localizedRoute('verdicts.search', { query: org.name })}
                                                         variant="light"
                                                         radius="xl"
                                                         size="xs"
@@ -177,11 +181,11 @@ export default function AIAnalysisVerdictCard({ verdict }: Props) {
                         <Group gap="xs">
                             <IconAlertCircle size={16} style={{ color: '#868e96' }} />
                             <Text size="xs" c="dimmed">
-                                AI 摘要可能會發生錯誤。請查核重要資訊。
+                                {t('ai.disclaimer')}
                             </Text>
                         </Group>
                         <Group gap="xs" visibleFrom="xs">
-                            <Tooltip label={allowVoteClick ? '這則摘要有幫助' : '建議已經送出，請稍後再試'}>
+                            <Tooltip label={t(allowVoteClick ? 'ai.helpful' : 'ai.alreadySent')}>
                                 <ActionIcon
                                     variant="subtle"
                                     color={allowVoteClick ? 'deepBlue' : 'gray'}
@@ -191,7 +195,7 @@ export default function AIAnalysisVerdictCard({ verdict }: Props) {
                                     <IconThumbUp size={18} />
                                 </ActionIcon>
                             </Tooltip>
-                            <Tooltip label={allowVoteClick ? '這則摘要沒有幫助' : '建議已經送出，請稍後再試'}>
+                            <Tooltip label={t(allowVoteClick ? 'ai.unhelpful' : 'ai.alreadySent')}>
                                 <ActionIcon
                                     variant="subtle"
                                     color={allowVoteClick ? 'red' : 'gray'}

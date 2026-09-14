@@ -1,42 +1,46 @@
 <?php
 
-use App\Http\Controllers\TestController;
-use App\Http\Controllers\VerdictAIAnalysisController;
-use App\Http\Controllers\VerdictController;
-use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AdminAuthController;
+use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AdminCourtController;
-use App\Http\Controllers\Admin\AdminVerdictController;
-use App\Http\Controllers\Admin\AdminVerdictSummaryController;
 use App\Http\Controllers\Admin\AdminOrganizationController;
 use App\Http\Controllers\Admin\AdminPersonController;
 use App\Http\Controllers\Admin\AdminPostController;
-use App\Http\Controllers\PostController;
+use App\Http\Controllers\Admin\AdminVerdictController;
+use App\Http\Controllers\Admin\AdminVerdictSummaryController;
 use App\Http\Controllers\EntityController;
+use App\Http\Controllers\PostController;
+use App\Http\Controllers\TestController;
+use App\Http\Controllers\VerdictAIAnalysisController;
+use App\Http\Controllers\VerdictController;
 use App\Http\Middleware\AdminMiddleware;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
-// Verdicts
-Route::get('/', [VerdictController::class, 'home'])->name('home');
-Route::get('/search', [VerdictController::class, 'search'])->name('verdicts.search');
-Route::get('/trending', [VerdictController::class, 'trending'])->name('verdicts.trending');
-Route::get('/verdicts', [VerdictController::class, 'index'])->name('verdicts.index');
-Route::get('/verdicts/{verdict}', [VerdictController::class, 'show'])->name('verdicts.show');
+$publicRoutes = function () {
+    // Verdicts
+    Route::get('/', [VerdictController::class, 'home'])->name('home');
+    Route::get('/search', [VerdictController::class, 'search'])->name('verdicts.search');
+    Route::get('/trending', [VerdictController::class, 'trending'])->name('verdicts.trending');
+    Route::get('/verdicts', [VerdictController::class, 'index'])->name('verdicts.index');
+    Route::get('/verdicts/{verdict}', [VerdictController::class, 'show'])->name('verdicts.show');
 
-// Posts
-Route::get('/posts', [PostController::class, 'index'])->name('posts.index');
-Route::get('/posts/{post}', [PostController::class, 'show'])->name('posts.show');
+    // Posts
+    Route::get('/posts', [PostController::class, 'index'])->name('posts.index');
+    Route::get('/posts/{post}', [PostController::class, 'show'])->name('posts.show');
 
-// Entities (People & Organizations)
-Route::get('/entities', [EntityController::class, 'index'])->name('entities.index');
-Route::get('/people/{name}', [EntityController::class, 'showPerson'])->name('people.show');
-Route::get('/organizations/{name}', [EntityController::class, 'showOrganization'])->name('organizations.show');
+    // Entities (People & Organizations)
+    Route::get('/entities', [EntityController::class, 'index'])->name('entities.index');
+    Route::get('/people/{name}', [EntityController::class, 'showPerson'])->name('people.show');
+    Route::get('/organizations/{name}', [EntityController::class, 'showOrganization'])->name('organizations.show');
 
-// general
-Route::get('/about', function () {
-    return Inertia::render('About');
-})->name('about');
+    Route::get('/about', fn() => Inertia::render('About'))->name('about');
+};
+
+// Chinese Routes
+$publicRoutes();
+// English Routes
+Route::prefix('en')->name('en.')->group($publicRoutes);
 
 // api
 Route::prefix('api')->group(function () {
@@ -94,7 +98,6 @@ Route::prefix('management')->name('admin.')->group(function () {
         Route::get('courts', [AdminCourtController::class, 'index'])->name('courts.index');
         Route::get('courts/{court}/edit', [AdminCourtController::class, 'edit'])->name('courts.edit');
         Route::put('courts/{court}', [AdminCourtController::class, 'update'])->name('courts.update');
-
 
         // Posts
         Route::get('posts', [AdminPostController::class, 'index'])->name('posts.index');

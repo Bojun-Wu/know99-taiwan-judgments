@@ -4,11 +4,13 @@ import { IconBuilding } from '@/components/Icons/IconBuilding';
 import { IconUser } from '@/components/Icons/IconUser';
 import Pagination from '@/components/Pagination';
 import VerdictCard from '@/components/VerdictCard/VerdictCard';
+import { localeRoute, useLocalizedRoute } from '@/i18n/routes';
 import Layout from '@/layouts/Layout';
 import { PaginationResponse } from '@/types';
 import { Verdict } from '@/types/verdict';
 import { Head } from '@inertiajs/react';
 import { Alert, Badge, Button, Center, Container, Group, Paper, Stack, Title } from '@mantine/core';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
     name: string;
@@ -18,7 +20,14 @@ interface Props {
 
 export default function EntityShow({ name, entityType, verdicts }: Props) {
     const isFirstPage = verdicts ? verdicts.meta.current_page === 1 : true;
-    const url = entityType === 'person' ? route('people.show', name) : route('organizations.show', name);
+    const { t, i18n } = useTranslation();
+    const localizedRoute = useLocalizedRoute();
+    const locale = i18n.language === 'en' ? 'en' : 'zh-TW';
+    const number = new Intl.NumberFormat(locale);
+    const routeName = entityType === 'person' ? 'people.show' : 'organizations.show';
+    const url = localizedRoute(routeName, name);
+    const count = number.format(verdicts?.meta.total || 0);
+    const relatedTitle = t('entities.relatedTitle', { name });
 
     return (
         <Layout>
@@ -26,35 +35,27 @@ export default function EntityShow({ name, entityType, verdicts }: Props) {
                 {/* 基本 SEO 標籤 */}
                 <title>
                     {isFirstPage
-                        ? `與「${name}」相關的判決書列表 | Know99判決書`
-                        : `第 ${verdicts?.meta.current_page} 頁 - 與「${name}」相關的判決書列表`}
+                        ? `${relatedTitle} | ${t('siteName')}`
+                        : `${t('common.page', { page: verdicts?.meta.current_page })} - ${relatedTitle}`}
                 </title>
-                <meta
-                    name="description"
-                    content={`查找所有提及「${name}」的公開判決書。Know99判決書為您整理了與「${name}」相關的案件列表，共在 ${verdicts?.meta.total.toLocaleString() || 0} 篇判決中提及。`}
-                />
+                <meta name="description" content={t('entities.relatedDescription', { name, count })} />
 
                 {/* 特定頁面不索引，避免重複內容 */}
                 {!isFirstPage && <meta name="robots" content="noindex, follow" />}
                 <link rel="canonical" href={url} />
 
                 {/* Open Graph (OG) 標籤 - 用於社群媒體分享 */}
-                <meta
-                    property="og:title"
-                    content={`${isFirstPage ? `與「${name}」相關的判決書 - Know99判決書` : `第 ${verdicts?.meta.current_page} 頁 - 與「${name}」相關的判決書列表`} | Know99判決書`}
-                />
-                <meta
-                    property="og:description"
-                    content={`瀏覽提及「${name}」的所有判決書。目前共找到 ${verdicts?.meta.total.toLocaleString() || 0} 篇相關案件。`}
-                />
+                <meta property="og:title" content={`${relatedTitle} | ${t('siteName')}`} />
+                <meta property="og:description" content={t('entities.relatedDescription', { name, count })} />
                 <meta property="og:type" content={entityType === 'person' ? 'profile' : 'object'} />
                 <meta property="og:url" content={url} />
-                <meta property="og:site_name" content="Know99判決書" />
-                <meta property="og:locale" content="zh_TW" />
+                <meta property="og:site_name" content={t('siteName')} />
+                <meta property="og:locale" content={locale === 'en' ? 'en_US' : 'zh_TW'} />
 
                 {/* 語言聲明 */}
-                <meta http-equiv="Content-Language" content="zh-TW" />
-                {!isFirstPage && <link rel="alternate" hrefLang="zh-TW" href={url} />}
+                <meta http-equiv="Content-Language" content={locale} />
+                <link rel="alternate" hrefLang="zh-TW" href={localeRoute(routeName, name, 'zh-TW')} />
+                <link rel="alternate" hrefLang="en" href={localeRoute(routeName, name, 'en')} />
 
                 {/* 結構化數據 (JSON-LD) */}
                 <script type="application/ld+json">
@@ -63,13 +64,13 @@ export default function EntityShow({ name, entityType, verdicts }: Props) {
                         '@type': entityType === 'person' ? 'Person' : 'Organization',
                         name: name,
                         url: url,
-                        description: `「${name}」相關的判決書列表，共在 ${verdicts?.meta.total.toLocaleString() || 0} 篇判決中被提及。透過Know99判決書查看詳細案件內容。`,
+                        description: t('entities.relatedDescription', { name, count }),
                         mainEntityOfPage: {
                             '@type': 'WebPage',
                             '@id': url,
                             hasPart: {
                                 '@type': 'ItemList',
-                                name: `與「${name}」相關的判決書列表`,
+                                name: relatedTitle,
                                 numberOfItems: verdicts?.meta.total || 0,
                                 itemListElement: verdicts?.data.map((verdict, index) => ({
                                     '@type': 'ListItem',
@@ -77,7 +78,7 @@ export default function EntityShow({ name, entityType, verdicts }: Props) {
                                     item: {
                                         '@type': 'LegalCase',
                                         name: `${verdict.court?.name} ${verdict.year} 年度${verdict.category}字第 ${verdict.number} 號 ${verdict.title}`,
-                                        url: route('verdicts.show', verdict.verdictId),
+                                        url: localizedRoute('verdicts.show', verdict.verdictId),
                                         description: verdict.content.replace(/\s/g, '').slice(0, 30) + '...',
                                     },
                                 })),
@@ -85,7 +86,7 @@ export default function EntityShow({ name, entityType, verdicts }: Props) {
                         },
                         publisher: {
                             '@type': 'Organization',
-                            name: 'Know99判決書',
+                            name: t('siteName'),
                             logo: {
                                 '@type': 'ImageObject',
                                 url: 'https://know99.com/favicon.ico',
@@ -100,7 +101,7 @@ export default function EntityShow({ name, entityType, verdicts }: Props) {
                 <Stack gap="lg">
                     <Group>
                         <Button variant="subtle" leftSection={<IconArrowLeft size={16} />} onClick={() => history.back()}>
-                            上一頁
+                            {t('common.previousPage')}
                         </Button>
                     </Group>
 
@@ -114,7 +115,7 @@ export default function EntityShow({ name, entityType, verdicts }: Props) {
                                     </Title>
                                 </Group>
                                 <Badge variant="outline" size="lg">
-                                    在 {verdicts?.meta.total.toLocaleString() || 0} 篇判決書中提及
+                                    {t('entities.mentionedIn', { count })}
                                 </Badge>
                             </Group>
                         </Stack>
@@ -122,7 +123,7 @@ export default function EntityShow({ name, entityType, verdicts }: Props) {
 
                     <Stack gap="md" mt="md">
                         <Title order={2} size="h4">
-                            相關判決書
+                            {t('entities.relatedVerdicts')}
                         </Title>
 
                         {verdicts && verdicts.data.length > 0 ? (
@@ -137,8 +138,8 @@ export default function EntityShow({ name, entityType, verdicts }: Props) {
                                 </Stack>
                             </>
                         ) : (
-                            <Alert icon={<IconAlertCircle size={16} />} title="沒有找到任何資料">
-                                請嘗試使用其他關鍵字搜尋。
+                            <Alert icon={<IconAlertCircle size={16} />} title={t('entities.nothingFound')}>
+                                {t('entities.useOtherKeyword')}
                             </Alert>
                         )}
                     </Stack>

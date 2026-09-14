@@ -6,6 +6,7 @@ import { IconFileText } from '@/components/Icons/IconFileText';
 import { IconSearch } from '@/components/Icons/IconSearch';
 import { IconUser } from '@/components/Icons/IconUser';
 import Pagination from '@/components/Pagination';
+import { localeRoute, useLocalizedRoute } from '@/i18n/routes';
 import Layout from '@/layouts/Layout';
 import { PaginationMetaLinks } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
@@ -28,6 +29,7 @@ import {
     Tooltip,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
+import { useTranslation } from 'react-i18next';
 import classes from './EntityIndex.module.css';
 
 interface Entity {
@@ -59,6 +61,11 @@ interface Props {
 
 export default function EntityIndex({ entities, query }: Props) {
     const isFirstPage = entities.current_page === 1;
+    const { t, i18n } = useTranslation();
+    const localizedRoute = useLocalizedRoute();
+    const locale = i18n.language === 'en' ? 'en' : 'zh-TW';
+    const number = new Intl.NumberFormat(locale);
+    const pageTitle = isFirstPage ? t('entities.pageTitle') : `${t('common.page', { page: entities.current_page })} - ${t('entities.pageTitle')}`;
     const form = useForm({
         initialValues: {
             query: query || '',
@@ -66,7 +73,7 @@ export default function EntityIndex({ entities, query }: Props) {
     });
 
     const handleSearch = form.onSubmit((values) => {
-        router.get(route('entities.index'), {
+        router.get(localizedRoute('entities.index'), {
             ...(values.query && { query: values.query }),
         });
     });
@@ -75,46 +82,41 @@ export default function EntityIndex({ entities, query }: Props) {
         <Layout>
             <Head>
                 {/* 基本 SEO 標籤 */}
-                <title>{isFirstPage ? '判決書相關人名與組織機構資料庫' : `第 ${entities.current_page} 頁 - 判決書相關人名與組織機構資料庫`}</title>
-                <meta
-                    name="description"
-                    content="探索Know99判決書的人名與組織機構資料庫。查找判決書中提及的特定人物、公司、法院及其他機構，並檢視相關案件數量與詳情。"
-                />
+                <title>{pageTitle}</title>
+                <meta name="description" content={t('entities.description')} />
 
                 {/* 特定頁面不索引，避免重複內容 */}
                 {!isFirstPage && <meta name="robots" content="noindex, follow" />}
-                <link rel="canonical" href={route('entities.index')} />
+                <link rel="canonical" href={localizedRoute('entities.index')} />
 
                 {/* Open Graph (OG) 標籤 - 用於社群媒體分享 */}
-                <meta
-                    property="og:title"
-                    content={`${isFirstPage ? '判決書相關人名與組織機構資料庫' : `第 ${entities.current_page} 頁 - 判決書相關人名與組織機構資料庫`} | Know99判決書`}
-                />
-                <meta property="og:description" content="查找判決書中提及的特定人物、公司、法院及其他機構，探索相關案件。" />
+                <meta property="og:title" content={`${pageTitle} | ${t('siteName')}`} />
+                <meta property="og:description" content={t('entities.ogDescription')} />
                 <meta property="og:type" content="website" />
-                <meta property="og:url" content={route('entities.index')} />
-                <meta property="og:site_name" content="Know99判決書" />
-                <meta property="og:locale" content="zh_TW" />
+                <meta property="og:url" content={localizedRoute('entities.index')} />
+                <meta property="og:site_name" content={t('siteName')} />
+                <meta property="og:locale" content={locale === 'en' ? 'en_US' : 'zh_TW'} />
 
                 {/* 語言聲明 */}
-                <meta http-equiv="Content-Language" content="zh-TW" />
-                {!isFirstPage && <link rel="alternate" hrefLang="zh-TW" href={route('entities.index')} />}
+                <meta http-equiv="Content-Language" content={locale} />
+                <link rel="alternate" hrefLang="zh-TW" href={localeRoute('entities.index', {}, 'zh-TW')} />
+                <link rel="alternate" hrefLang="en" href={localeRoute('entities.index', {}, 'en')} />
 
                 {/* 結構化數據 (JSON-LD) */}
                 <script type="application/ld+json">
                     {JSON.stringify({
                         '@context': 'https://schema.org',
                         '@type': 'CollectionPage',
-                        name: '判決書相關人名與組織機構資料庫',
-                        url: route('entities.index'),
-                        description: '瀏覽和搜尋判決書中提及的人名與組織機構。本資料庫列出了相關資料及其在判決書中的出現情況。',
+                        name: t('entities.pageTitle'),
+                        url: localizedRoute('entities.index'),
+                        description: t('entities.structuredDescription'),
                         potentialAction: {
                             '@type': 'EntryPoint',
-                            urlTemplate: `${route('entities.index')}?query={search_term_string}`,
+                            urlTemplate: `${localizedRoute('entities.index')}?query={search_term_string}`,
                         },
                         mainEntity: {
                             '@type': 'ItemList',
-                            name: '判決書相關人名與組織機構資料庫',
+                            name: t('entities.pageTitle'),
                             numberOfItems: entities.total,
                             itemListElement: entities.data.map((entity, index) => ({
                                 '@type': 'ListItem',
@@ -122,13 +124,16 @@ export default function EntityIndex({ entities, query }: Props) {
                                 item: {
                                     '@type': entity.type === 'person' ? 'Person' : 'Organization',
                                     name: entity.name,
-                                    url: entity.type === 'person' ? route('people.show', entity.name) : route('organizations.show', entity.name),
+                                    url:
+                                        entity.type === 'person'
+                                            ? localizedRoute('people.show', entity.name)
+                                            : localizedRoute('organizations.show', entity.name),
                                 },
                             })),
                         },
                         publisher: {
                             '@type': 'Organization',
-                            name: 'Know99判決書',
+                            name: t('siteName'),
                             logo: {
                                 '@type': 'ImageObject',
                                 url: 'https://know99.com/favicon.ico',
@@ -149,31 +154,23 @@ export default function EntityIndex({ entities, query }: Props) {
                                     <IconDatabaseSearch size={36} />
                                 </ThemeIcon>
                                 <Stack gap={5}>
-                                    <Title order={1}>人名與組織資料庫</Title>
+                                    <Title order={1}>{t('entities.title')}</Title>
                                     <Text size="md" c="dimmed">
-                                        洞察判決書中的關鍵
-                                        <Text span fw={700} c="blue.6">
-                                            人物
-                                        </Text>
-                                        與
-                                        <Text span fw={700} c="cyan.6">
-                                            機構
-                                        </Text>
-                                        ， 發掘案件脈絡，掌握司法動態。
+                                        {t('entities.intro')}
                                     </Text>
                                 </Stack>
                             </Group>
                             <form onSubmit={handleSearch}>
                                 <Flex gap="md" direction={{ base: 'column', sm: 'row' }}>
                                     <TextInput
-                                        placeholder="例如：王大明、XX股份有限公司..."
+                                        placeholder={t('entities.placeholder')}
                                         leftSection={<IconSearch size={18} />}
                                         size="lg" // 調整大小
                                         flex={1}
                                         {...form.getInputProps('query')}
                                     />
                                     <Button type="submit" size="lg" leftSection={<IconSearch />}>
-                                        搜尋
+                                        {t('common.search')}
                                     </Button>
                                 </Flex>
                             </form>
@@ -183,12 +180,12 @@ export default function EntityIndex({ entities, query }: Props) {
                     {/* 3. 結果總覽 */}
                     {query && entities.total > 0 && (
                         <Text size="sm" c="dimmed">
-                            為您找到關於「{query}」的 {entities.total.toLocaleString()} 筆相關資料
+                            {t('entities.foundFor', { query, count: number.format(entities.total) })}
                         </Text>
                     )}
                     {!query && (
                         <Text size="sm" c="dimmed">
-                            總計 {entities.total.toLocaleString()} 筆人物與機構
+                            {t('entities.total', { count: number.format(entities.total) })}
                         </Text>
                     )}
 
@@ -205,7 +202,11 @@ export default function EntityIndex({ entities, query }: Props) {
                                         withBorder
                                         classNames={{ root: classes.card }}
                                         component={Link}
-                                        href={entity.type === 'person' ? route('people.show', entity.name) : route('organizations.show', entity.name)}
+                                        href={
+                                            entity.type === 'person'
+                                                ? localizedRoute('people.show', entity.name)
+                                                : localizedRoute('organizations.show', entity.name)
+                                        }
                                     >
                                         <Stack gap="sm">
                                             <Group justify="space-between" align="flex-start">
@@ -223,18 +224,14 @@ export default function EntityIndex({ entities, query }: Props) {
                                                     </Title>
                                                 </Group>
                                                 <Badge variant="filled" size="sm" color={entity.type === 'person' ? 'deepBlue' : 'cyan'}>
-                                                    {entity.type === 'person' ? '人名' : '機構'}
+                                                    {t(entity.type === 'person' ? 'common.person' : 'common.organization')}
                                                 </Badge>
                                             </Group>
                                             <Divider />
                                             <Group justify="space-between" align="center">
-                                                <Tooltip label={`在 ${entity.verdicts_count.toLocaleString()} 篇相關判決書中被提及`}>
+                                                <Tooltip label={t('entities.mentionedTooltip', { count: number.format(entity.verdicts_count) })}>
                                                     <Badge variant="light" size="md" color="gray" leftSection={<IconFileText size={14} />}>
-                                                        提及&nbsp;
-                                                        <Text span fw={600}>
-                                                            {entity.verdicts_count.toLocaleString()}
-                                                        </Text>
-                                                        &nbsp;篇判決
+                                                        {t('entities.mentioned', { count: number.format(entity.verdicts_count) })}
                                                     </Badge>
                                                 </Tooltip>
                                                 <ThemeIcon variant="transparent" color="gray" size="lg">
@@ -264,16 +261,12 @@ export default function EntityIndex({ entities, query }: Props) {
                                 <IconAlertCircle size={36} />
                             </ThemeIcon>
                             <Title order={3} mb="xs">
-                                查無結果
+                                {t('entities.noResults')}
                             </Title>
                             <Text c="dimmed">
-                                抱歉，我們未能找到與「
-                                <Text span fw={700}>
-                                    {query || '您的搜尋詞'}
-                                </Text>
-                                」相關的資料。
+                                {t('entities.noResultsDescription', { query: query || t('entities.yourSearch') })}
                                 <br />
-                                請嘗試使用更廣泛的關鍵字，或檢查您的輸入是否有誤。
+                                {t('entities.tryAgain')}
                             </Text>
                         </Paper>
                     )}

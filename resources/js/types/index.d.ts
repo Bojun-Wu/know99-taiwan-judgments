@@ -7,6 +7,8 @@ interface Auth {
 
 interface SharedData {
     name: string;
+    locale: 'zh-TW' | 'en';
+    supportedLocales: Array<'zh-TW' | 'en'>;
     quote: { message: string; author: string };
     auth: Auth;
     ziggy: Config & { location: string };

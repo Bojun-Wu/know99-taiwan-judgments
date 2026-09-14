@@ -1,40 +1,44 @@
+import { useLocalizedRoute } from '@/i18n/routes';
 import { Link } from '@inertiajs/react';
 import { Anchor, Container, Group, Stack, Text } from '@mantine/core';
 import dayjs from 'dayjs';
+import { useTranslation } from 'react-i18next';
 
 export default function Footer() {
+    const { t } = useTranslation();
+    const localizedRoute = useLocalizedRoute();
     return (
         <Container size="lg" py="md">
             <Stack gap={5}>
                 <Group justify="center" gap="lg" mb="md">
-                    <Anchor component={Link} href={route('home')} c="dimmed" size="sm">
-                        首頁
+                    <Anchor component={Link} href={localizedRoute('home')} c="dimmed" size="sm">
+                        {t('nav.home')}
                     </Anchor>
-                    <Anchor component={Link} href={route('verdicts.trending')} c="dimmed" size="sm">
-                        熱門判決書
+                    <Anchor component={Link} href={localizedRoute('verdicts.trending')} c="dimmed" size="sm">
+                        {t('nav.trending')}
                     </Anchor>
-                    <Anchor component={Link} href={route('verdicts.index')} c="dimmed" size="sm">
-                        所有判決書
+                    <Anchor component={Link} href={localizedRoute('verdicts.index')} c="dimmed" size="sm">
+                        {t('nav.verdicts')}
                     </Anchor>
-                    <Anchor component={Link} href={route('posts.index')} c="dimmed" size="sm">
-                        專欄文章
+                    <Anchor component={Link} href={localizedRoute('posts.index')} c="dimmed" size="sm">
+                        {t('nav.posts')}
                     </Anchor>
-                    <Anchor component={Link} href={route('entities.index')} c="dimmed" size="sm">
-                        人名與組織資料庫
+                    <Anchor component={Link} href={localizedRoute('entities.index')} c="dimmed" size="sm">
+                        {t('nav.entities')}
                     </Anchor>
-                    <Anchor component={Link} href={route('about')} c="dimmed" size="sm">
-                        關於 Know99
+                    <Anchor component={Link} href={localizedRoute('about')} c="dimmed" size="sm">
+                        {t('nav.about')}
                     </Anchor>
                 </Group>
                 <Text c="dimmed" ta="center" size="sm">
-                    本網站部分內容為 AI 生成，僅供參考。請勿將其視為法律建議。
+                    {t('footer.disclaimer')}
                 </Text>
                 <Group justify="center" gap="lg">
                     <Anchor c="dimmed" ta="center" size="sm" href="mailto:contact@know99.com" target="_blank">
-                        聯絡我們：contact@know99.com
+                        {t('footer.contact')}
                     </Anchor>
                     <Text c="dimmed" ta="center" size="sm">
-                        © {dayjs().format('YYYY')} Know99. All rights reserved.
+                        {t('footer.copyright', { year: dayjs().format('YYYY') })}
                     </Text>
                 </Group>
             </Stack>
