@@ -1,0 +1,5 @@
+{$APP_DOMAIN} {
+    encode gzip zstd
+
+    reverse_proxy laravel:80
+}

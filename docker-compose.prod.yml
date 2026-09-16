@@ -1,74 +1,133 @@
 services:
-  laravel:
-    image: bmctechh/verdict-query:latest
+  caddy:
+    image: caddy:2-alpine
     env_file:
-      # portainer 將手動設的環境變數，設定到 stack.env
+      - stack.env
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./docker/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - caddy_proxy
+    depends_on:
+      - laravel
+    restart: unless-stopped
+
+  # Build locally on the VM; no Docker Hub application image is required.
+  laravel:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: know99:local
+    env_file:
       - stack.env
     expose:
-      - '80'
+      - "80"
     networks:
       - laravel_network
       - caddy_proxy
     volumes:
       - laravel_sitemap:/var/www/html/public/sitemaps
     depends_on:
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      typesense:
+        condition: service_started
+    restart: unless-stopped
 
   queue-worker:
-    image: bmctechh/verdict-query:latest
-    restart: unless-stopped
-    entrypoint: ["php", "artisan", "queue:work"]
+    image: know99:local
+    entrypoint: ["php", "artisan", "queue:work", "--sleep=3", "--tries=3", "--timeout=120"]
     env_file:
       - stack.env
     networks:
       - laravel_network
     depends_on:
-      - redis
-  
-  inertia-ssr:
-    image: bmctechh/verdict-query:latest
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     restart: unless-stopped
+
+  inertia-ssr:
+    image: know99:local
     entrypoint: ["php", "artisan", "inertia:start-ssr"]
     env_file:
       - stack.env
     expose:
-      - '13714'
+      - "13714"
     networks:
       - laravel_network
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    env_file:
+      - stack.env
+    environment:
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    networks:
+      - laravel_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
 
   typesense:
     image: typesense/typesense:28.0
-    expose:
-      - '${TYPESENSE_PORT}'
+    env_file:
+      - stack.env
     environment:
-      - TYPESENSE_API_KEY=${TYPESENSE_API_KEY}
-      - TYPESENSE_DATA_DIR=/typesense-data
-      - TYPESENSE_ENABLE_CORS=true
-    networks:
-      - laravel_network
+      TYPESENSE_API_KEY: ${TYPESENSE_API_KEY}
+      TYPESENSE_DATA_DIR: /typesense-data
+      TYPESENSE_ENABLE_CORS: "true"
     volumes:
       - typesense:/typesense-data
+    networks:
+      - laravel_network
+    restart: unless-stopped
 
   redis:
     image: redis:7.4.4-alpine
-    restart: unless-stopped
     volumes:
       - redis:/data
-    expose:
-      - '${REDIS_PORT}'
     networks:
       - laravel_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    restart: unless-stopped
 
 volumes:
-  typesense:
-    name: typesense
-  redis:
-    name: redis
+  caddy_data:
+    name: know99-caddy-data
+  caddy_config:
+    name: know99-caddy-config
   laravel_sitemap:
-    name: laravel_sitemap
+    name: know99-sitemap
+  postgres:
+    name: know99-postgres
+  typesense:
+    name: know99-typesense
+  redis:
+    name: know99-redis
 
 networks:
-  caddy_proxy:
-    external: true
   laravel_network:
-    external: true
+    driver: bridge
+  caddy_proxy:
+    driver: bridge

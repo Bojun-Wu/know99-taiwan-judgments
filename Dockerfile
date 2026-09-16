@@ -7,8 +7,6 @@ RUN apt-get update && apt-get install -y \
     supervisor \
     nodejs \
     npm \
-    postgresql \
-    postgresql-contrib \
     libpq-dev \
     git \
     zip \
