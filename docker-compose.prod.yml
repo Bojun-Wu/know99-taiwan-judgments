@@ -22,7 +22,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: know99:local
     env_file:
       - stack.env
     expose:
@@ -42,7 +41,9 @@ services:
     restart: unless-stopped
 
   queue-worker:
-    image: know99:local
+    build:
+      context: .
+      dockerfile: Dockerfile
     entrypoint: ["php", "artisan", "queue:work", "--sleep=3", "--tries=3", "--timeout=120"]
     env_file:
       - stack.env
@@ -56,7 +57,9 @@ services:
     restart: unless-stopped
 
   inertia-ssr:
-    image: know99:local
+    build:
+      context: .
+      dockerfile: Dockerfile
     entrypoint: ["php", "artisan", "inertia:start-ssr"]
     env_file:
       - stack.env
