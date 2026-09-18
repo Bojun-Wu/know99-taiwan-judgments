@@ -145,6 +145,7 @@ class VerdictSummaryService
                     ],
                 ],
                 'temperature' => 0,
+                'max_tokens' => 800,
             ],
             );
         if ($response->failed()) {

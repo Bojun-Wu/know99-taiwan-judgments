@@ -31,6 +31,7 @@ services:
       - caddy_proxy
     volumes:
       - laravel_sitemap:/var/www/html/public/sitemaps
+      - /opt/know99/storage/app/private/verdict_data:/var/www/html/storage/app/private/verdict_data:ro
     depends_on:
       postgres:
         condition: service_healthy
